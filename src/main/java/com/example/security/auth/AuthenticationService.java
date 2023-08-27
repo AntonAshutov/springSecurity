@@ -1,6 +1,6 @@
 package com.example.security.auth;
 
-import com.example.security.config.JwtService;
+import com.example.security.config.jwt.JwtService;
 import com.example.security.user.Role;
 import com.example.security.user.User;
 import com.example.security.user.UserRepo;

@@ -1,4 +1,4 @@
-package com.example.security.config;
+package com.example.security.config.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -35,6 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String userEmail;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
+            System.out.println("не нашли токен в токен фильтре");
             return;
         }
         jwt = authHeader.substring(7);
