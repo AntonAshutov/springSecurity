@@ -23,7 +23,7 @@ public class JwtService {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", Role.USER);
+        claims.put("role", userDetails.getAuthorities().iterator().next().getAuthority()); // Add user's role to claims
         return generateToken(claims, userDetails);
     }
 
@@ -41,9 +41,8 @@ public class JwtService {
                 .compact();
     }
 
-    public boolean isTokenValid(String token, UserDetails userDetails){
-        final String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    public boolean isTokenValid(String token){
+        return !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
@@ -73,7 +72,8 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
     public Role extractRole(String token) {
-        return Role.USER;
+        Claims claims = extractAllClaims(token);
+        return Role.valueOf(claims.get("role", String.class));
     }
 
     private Date extractExpiration(String token) {
