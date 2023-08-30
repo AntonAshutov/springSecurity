@@ -18,7 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
-    private final AuthenticationProvider authenticationProvider;
     private final CookieFilter cookieFilter;
 
     @Bean
@@ -35,10 +34,9 @@ public class SecurityConfig {
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(cookieFilter, JwtAuthenticationFilter.class);
-
+                .addFilterBefore(cookieFilter, JwtAuthenticationFilter.class)
+                .httpBasic().disable();  // Отключение HTTP Basic аутентификации
 
         return http.build();
     }

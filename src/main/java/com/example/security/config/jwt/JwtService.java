@@ -1,5 +1,7 @@
 package com.example.security.config.jwt;
 
+import com.example.security.user.Role;
+import com.example.security.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -19,8 +21,10 @@ public class JwtService {
 
     private static final String SECRET_KEY = "76777b1d8b2a21036bf041d5c3a72b86cebcea7bea6cce5c6c8b3fad472a0d3b";
 
-    public String generateToken(UserDetails userDetails){
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateToken(UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", Role.USER);
+        return generateToken(claims, userDetails);
     }
 
     public String generateToken(
@@ -68,8 +72,18 @@ public class JwtService {
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
+    public Role extractRole(String token) {
+        return Role.USER;
+    }
 
     private Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
+    }
+
+    public UserDetails loadFromToken(String token) {
+        User user = new User();
+        user.setEmail(extractUsername(token));
+        user.setRole(extractRole(token));
+        return user;
     }
 }
