@@ -1,46 +1,46 @@
 package com.example.security.auth;
 
-import com.example.security.config.jwt.JwtService;
-import com.example.security.user.Role;
+import com.example.security.config.jwt.TokenGenerator;
+import com.example.security.role.Role;
+import com.example.security.role.RoleRepo;
 import com.example.security.user.User;
 import com.example.security.user.UserRepo;
+import io.jsonwebtoken.lang.Assert;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
-    private final UserRepo repository;
+    private final UserRepo userRepo;
+    private final RoleRepo roleRepo;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
+    private final TokenGenerator tokenGenerator;
 
     public String register(RegisterRequest request) {
+        HashSet<Role> roles = new HashSet<>();
+        roles.add(roleRepo.findById(2).get());
+        roles.add(roleRepo.findById(3).get());
         var user = User.builder()
                 .firstname(request.getFirstname())
                 .lastname(request.getLastname())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.ADMIN)
+                .roles(roles)
                 .build();
-        repository.save(user);
+        userRepo.save(user);
         return "registration complete";
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
-//        authenticationManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(
-//                        request.getEmail(),
-//                        request.getPassword()
-//                )
-//        );
-        var user = repository.findByEmail(request.getEmail())
+    public AuthenticationResponse authenticate(AuthenticationRequest request) throws IllegalArgumentException{
+        var user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
+        Assert.isTrue(passwordEncoder.matches(request.getPassword(), user.getPassword()), "wrong pass");
+        var jwtToken = tokenGenerator.createToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
