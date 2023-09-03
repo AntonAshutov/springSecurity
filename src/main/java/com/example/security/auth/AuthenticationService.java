@@ -12,6 +12,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,10 +38,10 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) throws IllegalArgumentException{
-        var user = userRepo.findByEmail(request.getEmail())
-                .orElseThrow();
+        User user = userRepo.findByEmail(request.getEmail()).orElseThrow();
         Assert.isTrue(passwordEncoder.matches(request.getPassword(), user.getPassword()), "wrong pass");
-        var jwtToken = tokenGenerator.createToken(user);
+        List<String> rolesNames = userRepo.findRoleNamesByEmail(request.getEmail());
+        String jwtToken = tokenGenerator.createToken(request.getEmail(), rolesNames);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();

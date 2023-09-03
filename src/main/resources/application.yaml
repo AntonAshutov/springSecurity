@@ -17,4 +17,4 @@ spring:
     init:
       mode: always
       data-locations: classpath:roles.sql
-#trace: true
+trace: true
